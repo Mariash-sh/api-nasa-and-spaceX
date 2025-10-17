@@ -49,11 +49,7 @@ def download_last_launch_spaceX():
         response = requests.get(url)
         response.raise_for_status()
     except requests.exceptions.JSONDecodeError:
-        return 'Ошибка! '
-    # except:
-    #     return 'Ошибка! '
-    # except:
-    #     return 'Ошибка! '
+        return 'Ошибка формата данных'
     except requests.exceptions.ConnectionError:
         return 'Нет интернета!'
     text_image = f'Крайний запуск ракеты SpaceX. Cовершен: {response.json()[::-1][0]['launch_date_local']}!'
@@ -119,4 +115,5 @@ if __name__ == "__main__":
             print(res)
         except:
             print('Картинок в папке не найдено!')      
+
         sleep(60*60)
