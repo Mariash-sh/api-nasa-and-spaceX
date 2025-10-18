@@ -25,11 +25,11 @@ def download_photos_nasa(API_NASA, count=10):
         response = requests.get(url, params=params)
         response.raise_for_status()
     except requests.exceptions.HTTPError:
-        return 'Ошибка! Нет подключения к серверу'
+        return 'Ошибка! Нет подключения к серверу Nasa'
     except urllib3.exceptions.SSLError:
-        return 'Ошибка! Несоответсвие версии SSL'
+        return 'Ошибка! Несоответсвие версии SSL Nasa'
     except urllib3.exceptions.SSLError:
-        return 'Ошибка! Несоответсвие версии SSL'
+        return 'Ошибка! Несоответсвие версии SSL Nasa'
     except requests.exceptions.ConnectionError:
         return 'Нет интернета!'
             
@@ -38,7 +38,7 @@ def download_photos_nasa(API_NASA, count=10):
         if i['media_type'] == 'image':
             image = requests.get(i['url'])
             image.raise_for_status()
-            with open(pathlib.Path('nasa', f'image_day{index}.jpg'), 'wb') as file:
+            with open(pathlib.Path('nasa', f'{index}.jpg'), 'wb') as file:
                 file.write(image.content)
     return 'Успешно загружены 10 фоток Nasa!'
 
@@ -49,16 +49,18 @@ def download_last_launch_spaceX():
         response = requests.get(url)
         response.raise_for_status()
     except requests.exceptions.JSONDecodeError:
-        return 'Ошибка формата данных'
+        return 'Ошибка формата данных spaceX'
+
     except requests.exceptions.ConnectionError:
         return 'Нет интернета!'
+    
     text_image = f'Крайний запуск ракеты SpaceX. Cовершен: {response.json()[::-1][0]['launch_date_local']}!'
-    image_links = response.json()[::-1][0]['links']['flickr_images']
+    image_links = response.json()[::-1][7]['links']['flickr_images']
 
     if image_links:
         for index, url in enumerate(image_links):
             image = requests.get(url)
-            with open(pathlib.Path('spaceX', f'image_lautch{index}.jpg'), 'wb') as file:
+            with open(pathlib.Path('spaceX', f'{index}.jpg'), 'wb') as file:
                 file.write(image.content)
         return text_image     
 
@@ -81,13 +83,13 @@ def choice_random_photo_folder(**folder_paths_texts):
     
 
 # отпрака фото в тгк
-def send_photo_tgk(TOKEN, ID_chat, photo ,caption):
+def send_photo_tgk(TOKEN, ID_chat, path_photo ,caption):
     url_photo = f'https://api.telegram.org/bot{TOKEN}/sendPhoto' 
     params = {
         'chat_id': ID_chat,
         'caption': caption
     }
-    with open(photo, 'rb') as file:
+    with open(path_photo, 'rb') as file:
         response = requests.post(url_photo, files={'photo': file}, params=params)
     return response.raise_for_status    
 
@@ -107,7 +109,7 @@ if __name__ == "__main__":
         text_image_SpaceX = download_last_launch_spaceX()
         path_text_photo = {
             'nasa': text_image_nasa, 
-            'spaceX':text_image_SpaceX
+            'spaceX': text_image_SpaceX
         }
         try:
             photo_path, caption_post = choice_random_photo_folder(**path_text_photo)
@@ -115,5 +117,4 @@ if __name__ == "__main__":
             print(res)
         except:
             print('Картинок в папке не найдено!')      
-
         sleep(60*60)
